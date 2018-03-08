@@ -1,0 +1,148 @@
+/*
+   statusbar-overlay sets the background color for the overlay. Black text is the default when the statusbar plugin is not added. When the
+   statusbar plugin is added, it also adds default setting to make the content white via:
+
+       <preference name="StatusBarStyle" value="lightcontent"/>
+
+   Setting the background color to black will allow the default light content (white text/icons) to show on it. The statusbar plugin is included
+   in the config.xml file and will be added by the CLI when you build locally.
+
+   See https://github.com/apache/cordova-plugin-statusbar
+*/
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(../fonts/MaterialIcons-Regular.eot); /* For IE6-8 */
+  src: local('Material Icons'),
+       local('MaterialIcons-Regular'),
+       url(../fonts/MaterialIcons-Regular.woff2) format('woff2'),
+       url(../fonts/MaterialIcons-Regular.woff) format('woff'),
+       url(../fonts/MaterialIcons-Regular.ttf) format('truetype');
+}
+
+@font-face {
+  font-family: 'koodak';
+  src: url(../fonts/koodak.ttf); 
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;  /* Preferred icon size */
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+.koodak-font {
+  font-family: 'koodak';
+  direction: rtl;
+  /* Support for all WebKit browsers. */
+  -webkit-font-smoothing: antialiased;
+  /* Support for Safari and Chrome. */
+  text-rendering: optimizeLegibility;
+  /* Support for Firefox. */
+  -moz-osx-font-smoothing: grayscale;
+  /* Support for IE. */
+  font-feature-settings: 'liga';
+}
+
+.statusbar-overlay {
+    background: #000000;
+}
+
+#colorPickerDiv{
+	
+margin: auto;
+}
+
+#colorPickerInput{
+	
+width: 500px;
+height: 500px;
+left: 50%;
+  margin-left: -50px;
+}
+.picker{
+	/*position:absolute;
+	top: -1.5em;*/
+	width: 100%;
+	height: 100%;
+}
+
+#colorPickerDivWraper{
+	margin: auto;
+	width:90%;
+}
+
+ #colorPickerRGBIcon{
+	 position:absolute;
+	float: left;
+	
+ }
+ 
+ .appdialog{
+	 width: 94% !important;
+	 left: 3%;
+	 margin-left: 0 !important;
+ }
+ 
+ /*The following two styles are to mirror sortable list for rtl*/ 
+.sortable .sortable-handler{
+	right: auto;
+	left: 0px;
+}
+
+.md .sortable-enabled .item-inner, .md .sortable-enabled .item-link .item-inner {
+    padding-right: 15px;
+}
+/***********/
+.md label.item-radio > .icon-radio {
+    margin-right: 5px;
+}
+
+.md .toolbar a.link{
+font-family: koodak;
+direction: rtl;
+font-size: 1.1em;
+}
+
+/* dialog title and font font*/
+
+.dialog-title, .md .dialog-button, .md .dialog-text{
+font-family: koodak;
+direction: rtl;
+}
+
+.ltr-element{
+direction: ltr;
+text-align: left;	
+}
+
+.md .item-floating-label{
+	transform-origin: right;
+}
+
+/*to tremove list link icon and padding for rtl*/
+.md .links-list a{
+background-size: 0 0;
+padding-right: 0px;
+}

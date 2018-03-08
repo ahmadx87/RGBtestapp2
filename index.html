@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <!--<meta http-equiv="Content-Security-Policy" content="default-src 'self' data: gap: https://ssl.gstatic.com 'unsafe-eval'; style-src 'self' 'unsafe-inline'; media-src *">
+       Required meta tags-->
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui">
+      <meta name="apple-mobile-web-app-capable" content="yes">
+      <meta name="apple-mobile-web-app-status-bar-style" content="black">
+      <meta name="format-detection" content="telephone=no">
+      <meta name="msapplication-tap-highlight" content="no">
+      <!-- Your app title -->
+      <title>My App</title>
+      <!-- This template defaults to the iOS CSS theme. To support both iOS and material design themes, see the Framework7 Tutorial at the link below:
+         http://www.idangero.us/framework7/tutorials/maintain-both-ios-and-material-themes-in-single-app.html
+         -->
+      <link rel="stylesheet" href="css/framework7.css">
+      <link type="text/css" rel="stylesheet" href="css/wheelcolorpicker.css" />
+      <link rel="stylesheet" href="css/styles.css">
+   </head>
+   <body  class="color-theme-indigo">
+      <div id="app">
+         <div class="statusbar"></div>
+         <div class="view view-main view-init" data-url="/">
+            <div class="page ">
+               <div class="navbar">
+                  <div class="navbar-inner">
+                     <div class="left">
+                        <a href="#" class="link icon-only popup-open" data-popup=".settPage-popup" id="settBtn">
+                        <i class="icon material-icons">menu</i>
+                        </a>
+                     </div>
+                     <div class="title sliding koodak-font right">وایفای کنترلر</div>
+                     <div class="right">
+                        <a class="link icon-only" id="powerBtn">
+                        <i class="icon material-icons">power_settings_new</i>
+                        </a>
+                     </div>
+                  </div>
+               </div>
+               <div class="toolbar tabbar tabbar-labels toolbar-bottom-md">
+                  <div class="toolbar-inner">
+                     <a href="#staticColorTab" class="tab-link tab-link-active">
+                     <i class="icon material-icons">palette</i>
+                     <span class="tabbar-label koodak-font">رنگ ثابت</span>
+                     </a>
+                     <a href="#animationTab" class="tab-link">
+                     <i class="icon material-icons">play_circle_outline</i>
+                     <span class="tabbar-label koodak-font">انیمیشن</span>
+                     </a>
+                  </div>
+               </div>
+               <div class="tabs">
+                  <div id="staticColorTab" class="page-content tab tab-active" style="overflow:hidden">
+                     <div class="block-title koodak-font">درصد روشنایی: <span id="brightnessSliderVal"></span></div>
+                     <div class="list simple-list">
+                        <ul>
+                           <li>
+                              <div class="item-cell width-auto flex-shrink-0">
+                                 <i class="icon material-icons">brightness_low</i>
+                              </div>
+                              <div class="item-cell flex-shrink-3">
+                                 <div class="range-slider range-slider-init color-orange" id="brightnessSliderdiv" data-label="true">
+                                    <!--use ID of this el. to set and get valuse -->
+                                    <input id="brightnessSlider" type="range" min="0" max="100" step="1" value="50">
+                                 </div>
+                              </div>
+                              <div class="item-cell width-auto flex-shrink-0">
+                                 <i class="icon material-icons">brightness_high</i>
+                              </div>
+                           </li>
+                        </ul>
+                     </div>
+
+                     <!-- Color picker -->
+                     <div id="colorPickerDivWraper">
+                        <div id="colorPickerRGBIcon" >
+                           <button class="button color-black openRGBdialog" ><i class="icon material-icons">tune</i></button>
+                        </div>
+                        <div id="colorPickerDiv">
+                           <input type="text" id="colorPickerInput"  data-wcp-cssClass="picker" data-role="none" >
+                        </div>
+                     </div>
+                  </div>
+                  <div id="animationTab" class="page-content tab">
+                     <div class="toolbar" style="position:fixed; top:56px">
+                        <div class="toolbar-inner">
+							<a class="link item-content item-link popup-open" data-popup=".animSett-popup" href="#" id="settingsBtn"><i class="material-icons">settings</i></a>
+                           <a class="link" id="loadBtn"><i class="material-icons">folder_open</i></a>
+                           <a class="link"><i class="material-icons">save</i></a>
+                           <a class="link" id="sendBtn"><i class="material-icons">send</i></a>
+                        </div>
+                     </div>
+                     <div class="list sortable koodak-font" id="animationListDiv" style="top:30px; bottom:30px">
+                        <ul>
+                           <!-- will be populated ba JS -->
+                        </ul>
+                     </div> 
+					 
+                     <!-- Add animation to list modal -->
+                     <div class="sheet-modal add-animation-sheet">
+                        <div class="toolbar">
+                           <div class="toolbar-inner">
+                              <div class="left"></div>
+                              <div class="right">
+                                 <p class="link koodak-font">  افزودن انیمیشن به لیست  </p>
+                              </div>
+                           </div>
+                        </div>
+                        <div class="sheet-modal-inner">
+                           <div class="page-content">
+                              <div class="block">
+									<div class="list links-list koodak-font" id="animationAddSelectList">
+		
+									</div>                                 
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+					 
+	<div class="popup settPage-popup">
+		<div class="view view-init">
+      <div class="page">
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="title koodak-font right">تنظیمات کنترلر</div>
+            <div class="left"><a href="#" class="link popup-close koodak-font"><i class="icon material-icons">keyboard_backspace</i></a></div>
+          </div>
+        </div>
+
+        <div class="page-content koodak-font">
+		<div class="block">
+<div class="block-title">تغییر نام و رمز دستگاه</div>
+<div class="list no-hairlines-md">
+  <ul>
+    <li class="item-content item-input item-input-with-info">
+      <div class="item-media">
+        <i class="material-icons">lock_outline</i>
+      </div>
+      <div class="item-inner">
+        <div class="item-title item-floating-label item-label">رمز کنونی وایفای</div>
+        <div class="item-input-wrap ltr-element">
+          <input type="text" placeholder="رمز وایفای">
+          <span class="input-clear-button ltr-element"></span>
+        </div>
+      </div>
+    </li>
+
+    <li class="item-content item-input item-input-with-info">
+      <div class="item-media">
+        <i class="material-icons">wifi</i>
+      </div>
+      <div class="item-inner">
+        <div class="item-title item-floating-label item-label">نام جدید وایفای</div>
+        <div class="item-input-wrap ltr-element">
+          <input type="text">
+          <span class="input-clear-button"></span>
+        </div>
+      </div>
+    </li>
+    <li class="item-content item-input item-input-with-info">
+      <div class="item-media">
+        <i class="material-icons">lock</i>
+      </div>
+      <div class="item-inner">
+        <div class="item-title item-label item-floating-label">رمز جدید وایفای</div>
+        <div class="item-input-wrap ltr-element">
+          <input type="email" placeholder="Your e-mail">
+          <span class="input-clear-button"></span>
+        </div>
+      </div>
+    </li>
+  </ul>
+  </br>
+  <button class="col button  button-raised color-indigo  button-fill button-round center" style="width:50%; margin:auto">ذخیره</button>
+</div>          
+        </div>
+		</div>
+      </div>
+    </div>
+	</div>
+	
+	
+	<div class="popup animSett-popup ">
+		<div class="view view-init">
+      <div class="page">
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="title koodak-font right">تنظیمات انیمیشن</div>
+            <div class="left"><a href="#" class="link popup-close"><i class="icon material-icons">keyboard_backspace</i></a></div>
+          </div>
+        </div>
+		
+<div class="page-content">
+					<div class="block-title koodak-font">مدت هر انیمیشن:<span id="animationDurationSpan"></span></div>
+                     <div class="list simple-list">
+                        <ul>
+                           <li>
+                              <div class="item-cell width-auto flex-shrink-0">
+                                 <i class="icon material-icons">schedule</i>
+                              </div>
+                              <div class="item-cell flex-shrink-3">
+                                 <div class="range-slider color-indigo" id="durationSlider" data-label="true">                        
+                                    <input  type="range" min="3" max="120" step="1" value="20">
+                                 </div>
+                              </div>
+                           </li>
+                        </ul>
+                     </div>
+					 
+					 <div class="block-title koodak-font">سرعت انیمیشن:<span id="FPSSpan"></span></div>
+                     <div class="list simple-list">
+                        <ul>
+                           <li>
+                              <div class="item-cell width-auto flex-shrink-0">
+                                 <i class="icon material-icons">timer</i>
+                              </div>
+                              <div class="item-cell flex-shrink-3">
+                                 <div class="range-slider color-indigo" id="FPSSlider" data-label="true">                        
+                                    <input type="range" min="10" max="120" step="1" value="60">
+                                 </div>
+                              </div>
+                           </li>
+                        </ul>
+                     </div>
+					 
+					 <div class="block-title koodak-font">سرعت تغییر رنگ:<span id="hueChangeSpeedSpan"></span></div>
+                     <div class="list simple-list">
+                        <ul>
+                           <li>
+                              <div class="item-cell width-auto flex-shrink-0">
+                                 <i class="icon material-icons">av_timer</i>
+                              </div>
+                              <div class="item-cell flex-shrink-3">
+                                 <div class="range-slider color-indigo" id="hueChangeSlider" data-label="true">
+                            
+                                    <input  type="range" min="0" max="100" step="1" value="20">
+                                 </div>
+                              </div>
+
+                           </li>
+                        </ul>
+                     </div>
+
+         
+        </div>
+		</div>
+      </div>
+    </div>
+	</div>
+	
+	
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+      <script type="text/javascript" src="cordova.js"></script>
+      <script type="text/javascript" src="js/jquery-3.2.1.js"></script>
+      <script type="text/javascript" src="js/jquery.wheelcolorpicker.js"></script>
+      <script type="text/javascript" src="js/framework7.js"></script>
+      <script type="text/javascript" src="js/my-app.js"></script>
+   </body>
+</html>
