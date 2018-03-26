@@ -1,9 +1,13 @@
 // Dom7
 var $$ = Dom7;
 animations = ["رنگین کمان", "رنگین کمان+درخشش", "تپش تصادفی", "ستاره دنباله دار", "3 ستاره دنباله دار", "رفت و برگشتی", "7 رنگ پیوسته"];
+//format of animListSaveObj ===> [['ll',[1,2,3]],['mmm',[5,6,7,8,9,10]]];
+animListSaveObj=JSON.parse(localStorage.getItem('listSaveLocalStorage'));
+if(!animListSaveObj){animListSaveObj=[]};
+console.log(animListSaveObj);
 var itemToAddAnimationAfter = '';
 var powerState=true;
-var deviceIP="http://192.168.4.1/";
+var deviceIP="http://192.168.1.10/";
 
 
 // Init App
@@ -11,6 +15,7 @@ var app = new Framework7({
     id: 'io.framework7.testapp',
     root: '#app',
     theme: 'md',
+	pushState: true,
     statusbar: {
         materialBackgroundColor: '#303e8e',
     },
@@ -117,8 +122,7 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
 	
 	$('#sendBtn').on('click', function(){
 		var animIdx='-';
-		$('#animationListDiv ul li').each(function() { //this part generates the string to be sent to controller, like -1-0-3-2-0
-		
+		$('#animationListDiv ul li').each(function() { //this part generates the string to be sent to controller, like -1-0-3-2-0	
 			animIdx+=($(this)[0].value+1)+'-';
         })
 		sendChange({"anim": animIdx});
@@ -172,7 +176,7 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
             verticalButtons: false,
             cssClass: 'appdialog',
             buttons: [{
-                    text: 'تایید',
+                    text: 'بستن',
                     onClick: function() {
                         $('#colorPickerInput').wheelColorPicker('setColor', {
                             r: app.range.getValue('#redSlider') / 255,
@@ -180,10 +184,6 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
                             b: app.range.getValue('#blueSlider') / 255
                         });
                     },
-                },
-                {
-                    text: 'انصراف',
-                    color: 'orange',
                 }
             ],
             on: {
@@ -311,8 +311,134 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
 			});
 	});
 
-	
-	
+$$('.open-save').on('click', function () {
+        var saveDialog=app.dialog.create({
+            title: 'ذخیره لیست',
+            verticalButtons: false,
+            buttons: [{
+                    text: 'انصراف',
+					color: 'red',
+                    onClick: function() {
+                    },
+                },
+			
+				{
+                    text: 'ذخیره',
+					close: false,
+                    onClick: function() {
+						var newSaveName=$('#saveNameField').val();
+						if(newSaveName!=''){
+							var duplicate=false;
+							animListSaveObj.forEach(function(item,index){
+							if(item[0]==newSaveName) {duplicate=true; return;}
+							});
+							if(!duplicate){
+								var listArr=[];
+								var i=0;
+								$('#animationListDiv ul li').each(function() {
+									listArr[i]=$(this)[0].value;
+									i++;
+								});
+								console.log(listArr);
+								animListSaveObj.push([newSaveName,listArr]);
+								localStorage.setItem('listSaveLocalStorage',JSON.stringify(animListSaveObj));
+								app.dialog.close();
+								app.toast.create({
+									text: 'لیست ذخیره شد',
+									closeTimeout: 2000,
+									cssClass: 'toastCustomize',
+									position: 'center',
+								}).open();																
+							}else{
+								app.dialog.close();
+								app.dialog.create({
+									title: 'توجه!',
+									verticalButtons: false,
+									buttons: [{
+											text: 'انصراف',
+											color: 'green',
+											onClick: function() {
+												saveDialog.open();
+											},
+										},
+									
+										{
+											text: 'تایید',
+											color: 'red',
+											close: true,
+											onClick: function() {
+													var listArr=[];
+													var i=0;
+													$('#animationListDiv ul li').each(function() {
+														listArr[i]=$(this)[0].value;
+														i++;
+													});
+													console.log(listArr);
+													animListSaveObj.push([newSaveName,listArr]);
+													localStorage.setItem('listSaveLocalStorage',JSON.stringify(animListSaveObj));
+													app.dialog.close();
+													app.toast.create({
+														text: 'لیست ذخیره شد',
+														closeTimeout: 2000,
+														cssClass: 'toastCustomize',
+														position: 'center',
+													}).open();															
+											},
+										}
+										
+									],
+									on: {
+										open: function(d) {
+
+										}
+									},
+									content: '<div class="block">\
+										<div class="koodak-font">لیستی با این عنوان وجود دارد. محتویات لیست ذخیره شده با لیست موجود جایگزین خواهد شد. آیا تایید می کنید؟</div>\
+											</div>',
+								}).open();
+								
+							}							
+						}
+						
+                    },
+                }
+				
+            ],
+            on: {
+                open: function(d) {
+
+                }
+            },
+            content: '<div class="block">\
+				<div class="list inline-labels no-hairlines-md">\
+				<div class="koodak-font">لطفاً عنوان مورد نظر برای ذخیره لیست را وارد نمایید.</div>\
+				  <ul>\
+					<li class="item-content item-input">\
+					  <div class="item-inner">\
+						<div class="item-input-wrap">\
+						  <input type="text" id="saveNameField" placeholder="" required validate data-error-message="لطفاً یک عنوان وارد کنید">\
+						  <span class="input-clear-button"></span>\
+						</div>\
+					  </div>\
+					</li>\
+					</ul>\
+					</div>\
+					</div>',
+        }).open();
+});	
+
+$$('#loadBtn').on('click',function(){
+	    
+    for (var i = 0; i < animations.length; i++) {
+        listHTMLstring += $listAddItem(animations[i],i);
+    }
+	var loadListHTMLstring = '';
+    
+	animListSaveObj.forEach(function(item, index){
+		loadListHTMLstring += $loadListAddItem(item[0],index);
+	});
+	document.querySelector('#animListSavedNamesDiv ul').innerHTML = loadListHTMLstring;
+});	
 
 });
 
@@ -329,6 +455,19 @@ function $listAddItem(item, itemNo) {
 		        <div class="swipeout-actions-right">\
         <a href="#" data-sheet=".add-animation-sheet" class="color-green listAddItem sheet-open"><i class="material-icons">add</i></a>\
         <a href="#" class="listDeleteBtn swipeout-delete"><i class="material-icons">delete</i></a>\
+      </div>\
+        </li>'
+}
+
+function $loadListAddItem(item, itemNo) {
+    return '<li class="swipeout" value= '+itemNo+'>\
+          <div class="item-content swipeout-content">\
+            <div class="item-inner">\
+              <div class="item-title">' + item + ' </div>\
+            </div>\
+          </div>\
+		        <div class="swipeout-actions-right">\
+        <a href="#" class="loadListDeleteBtn swipeout-delete"><i class="material-icons">delete</i></a>\
       </div>\
         </li>'
 }

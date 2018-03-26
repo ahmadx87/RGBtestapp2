@@ -146,3 +146,19 @@ text-align: left;
 background-size: 0 0;
 padding-right: 0px;
 }
+.md .dialog-inner {
+  padding: 18px 15px 1px;
+  text-align: justify;
+}
+
+.md .item-input-error-message{
+	font-family: koodak;
+direction: rtl;
+right: 0px;
+}
+
+.toastCustomize{
+	font-family: koodak;
+direction: rtl;
+opacity: 0.5;
+}

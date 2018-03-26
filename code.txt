@@ -1,0 +1,480 @@
+/*Data will be received from wifi using ESP8266
+Received data will be compared with stored data in the EEPROM if it is new it will be overwritten.
+Addresses are as follows:
+0 :Brightness
+1 :FPS
+2 :Duration of each animation
+10:Solid color Red
+11:Solid color Green
+12:solid color Blue
+30-100:Multi animation indices.
+*/
+#define NledAdr 0 // 0-1
+#define BriAdr 5
+#define FpsAdr 6
+#define DurAdr 7
+#define HueSpeed 8
+#define RedAdr 10
+#define GrnAdr 11
+#define BluAdr 12 
+#define AnmAdr 30 // 30-100
+#define SsidAdr 102 // 102-133
+#define PassAdr 134 // 134-165
+
+#include <ESP8266WiFi.h>            
+#include <ESP8266WebServer.h>
+#include "FastLED.h"
+#include "EEPROM.h"
+
+#define DATA_PIN    13
+#define DATA_PIN2   4
+#define LED_TYPE    WS2811
+#define COLOR_ORDER GRB
+#define rebootPin 5
+#define ARRAY_SIZE(A) (sizeof(A) / sizeof((A)[0]))
+
+uint8_t sang1[]={0,1,2,3};
+uint8_t sang2[]={57,58,59,60,61,62,63,64};
+uint8_t sang3[]={65,66,67,68};
+
+uint8_t gol[][4]={{45,46,47,48},{41,42,43,44},{37,38,39,40},{33,34,35,36},{29,30,31,32},{25,26,27,28},{21,22,23,24},{17,18,19,20}};
+uint8_t favleft[][1]={{4},{5},{6},{7},{13},{14},{15},{16}};
+uint8_t favright[][1]={{49},{50},{51},{52},{53},{54},{55},{56}};
+//uint8_t favl1[]={4}, favl2[]={5}, favl3={6},favl4={7},favl5={13},favl6={14},favl7={15},favl8={16};
+//uint8_t favr1={49}, favr2={50}, favr3={51},favr4={52},favr5={53},favr6={54},favr7={55},favr8={56};
+uint8_t hoz[]={8,9,10,11,12};
+
+CRGB * leds;
+CRGB leds1[28];
+CRGB color[1];
+uint16_t NUM_LEDS = 69;
+CLEDController * pLed = NULL;
+String inData;
+uint8_t huespeed=5;
+uint8_t FPS = 100; //FRAMES_PER_SECOND
+uint8_t BRIGHTNESS = 100;
+int DURATION = 10;
+uint8_t solidColorRGB[] = {125, 125, 125};
+uint8_t animationList[51];
+
+uint8_t animationListLength;
+unsigned long previousMillis = 0;
+bool change=false; //if true we go to save to EEprom.
+unsigned long changeMillis = 0;  //changes will be saved 1 minute after no change is applied to avoid EEPROM wear.
+uint8_t changeMode=0;  //0 for solid color - 1 for animation. this is used to know what to save to eeprom
+uint8_t gCurrentPatternNumber = 0;
+uint8_t gHueChangeTimeInterval = 20;
+
+
+
+uint8_t animListindex= 0;
+uint8_t gHue = 0; // rotating "base color" used by many of the patterns
+bool initSetup = true;
+
+ESP8266WebServer server(80);   //Web server object. Will be listening in port 80 (default for HTTP)
+
+void setup() {
+  EEPROM.begin(200);
+ Serial.begin(115200);
+  cWiFi();
+  setupFastLED();
+  loadConfig();
+}
+
+inline void setupFastLED()
+{
+  leds = (CRGB*)malloc(3 * NUM_LEDS);
+  memset(leds, 0, 3 * NUM_LEDS);
+  pLed = new WS2811Controller800Khz<DATA_PIN, COLOR_ORDER>();
+  FastLED.addLeds(pLed, leds, NUM_LEDS);
+  FastLED.addLeds<LED_TYPE,DATA_PIN2,COLOR_ORDER>(leds1, 28);
+  FastLED.clear();
+  FastLED.show();
+}
+
+typedef void (*SimplePatternList[])();
+SimplePatternList gPatterns = { solidColor, rainbow, rainbowWithGlitter, confetti, sinelon, juggle, bpm,solidColorCycle };
+
+void loop() {
+
+  server.handleClient();    //Handling of incoming requests
+  if(change){
+    if(millis()-changeMillis>60000){
+      change=false;
+      Serial.println("save to eeprom.");
+      saveToEEPROM();
+    }
+    
+  }
+  gPatterns[gCurrentPatternNumber]();
+  FastLED.show();  
+  FastLED.delay(1000/FPS); 
+  EVERY_N_MILLISECONDS( huespeed ) { gHue++; } // slowly cycle the "base color" through the rainbow
+  if (EveryNSec( DURATION )) { nextPattern();} // change patterns periodically
+}
+
+
+void setLeds(uint8_t idxArr[],CRGB col){
+  uint8_t _size=sizeof(idxArr)/sizeof(idxArr[0]);
+  for(int i=0; i<_size;i++){
+    leds[i]=col[0];
+  }
+}
+
+void rainbowGoldan(){
+fill_rainbow( leds1, 8, gHue, 15);
+for(int i=0;i<8;i++){
+setLeds(gol[i],leds[i]);
+}
+}
+
+
+
+void solidColor(){
+  for (int i=0; i<NUM_LEDS; i++){
+    leds[i]=CRGB(solidColorRGB[0],solidColorRGB[1],solidColorRGB[2]);
+  }
+}
+
+void rainbow() 
+{
+  // FastLED's built-in rainbow generator
+fill_rainbow( leds, NUM_LEDS, gHue, 10);
+}
+
+void rainbowWithGlitter() 
+{
+  // built-in FastLED rainbow, plus some random sparkly glitter
+  rainbow();
+  addGlitter(80);
+}
+
+
+void addGlitter( fract8 chanceOfGlitter) 
+{
+  if( random8() < chanceOfGlitter) {
+    leds[ random16(NUM_LEDS) ] += CRGB::White;
+  }
+}
+
+void confetti() 
+{
+  // random colored speckles that blink in and fade smoothly
+  fadeToBlackBy( leds, NUM_LEDS, 10);
+  int pos = random16(NUM_LEDS);
+  leds[pos] += CHSV( gHue + random8(64), 255, 255);
+}
+
+void sinelon()
+{
+  // a colored dot sweeping back and forth, with fading trails
+  fadeToBlackBy( leds, NUM_LEDS, 20);
+  int pos = beatsin16(13,0,NUM_LEDS);
+  leds[pos] += CHSV( gHue, 255, 192);
+}
+
+void bpm()
+{
+  // colored stripes pulsing at a defined Beats-Per-Minute (BPM)
+  uint8_t BeatsPerMinute = 62;
+  CRGBPalette16 palette = PartyColors_p;
+  uint8_t beat = beatsin8( BeatsPerMinute, 64, 255);
+  for( int i = 0; i < NUM_LEDS; i++) { //9948
+    leds[i] = ColorFromPalette(palette, gHue+(i*2), beat-gHue+(i*10));
+  }
+}
+
+void juggle() {
+  // eight colored dots, weaving in and out of sync with each other
+  fadeToBlackBy( leds, NUM_LEDS, 20);
+  byte dothue = 0;
+  for( int i = 0; i < 3; i++) {
+    leds[beatsin16(i+7,0,NUM_LEDS)] |= CHSV(dothue, 200, 255);
+    dothue += 32;
+  }
+}
+
+void solidColorCycle(){
+  //cycle through solid colors.
+ fill_solid( leds, NUM_LEDS, CHSV(gHue,255,255));
+}
+
+int str2int(String InputStr) {
+  return InputStr.toInt();
+}
+
+
+void nextPattern()
+{
+  // add one to the current pattern number, and wrap around at the end
+  //if (gCurrentPatternNumber==animationListLength) gCurrentPatternNumber--;
+  animListindex = (animListindex + 1) % animationListLength;
+  if (animListindex == animationListLength) animListindex = 0;
+  gCurrentPatternNumber = animationList[animListindex];
+}
+
+boolean EveryNSec(uint8_t period) {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= period * 1000) {
+    // save the last time you blinked the LED
+    previousMillis = currentMillis;
+    return true;
+  }
+  else { return false; }
+}
+
+void EEPROMupdate(byte address, byte value) {
+  if (EEPROM.read(address) != value) {
+    EEPROM.write(address, value);
+    EEPROM.commit();
+  }
+  return;
+}
+
+uint16_t EEPROMReadlong(uint8_t address)
+{
+  //Read the 2 bytes from the eeprom memory.
+  uint16_t two = EEPROM.read(address);
+  uint16_t one = EEPROM.read(address + 1);
+  //Return the recomposed long by using bitshift.
+  return ((two << 0) & 0xFF) + ((one << 8) & 0xFFFF);
+}
+
+void EEPROMWritelong(uint8_t address, uint16_t value)
+{
+  //Decomposition from a long to 2 bytes by using bitshift.
+  //One = Most significant -> two = Least significant byte
+  byte two = (value & 0xFF);
+  byte one = ((value >> 8) & 0xFF);
+  //Write the 2 bytes into the eeprom memory.
+  EEPROMupdate(address, two);
+  EEPROMupdate(address + 1, one);
+}
+
+void handleCom() { //Handler
+
+  if (server.arg("bri") != "") {     //brightness config set
+    BRIGHTNESS = str2int(server.arg("bri"));
+    //EEPROMupdate(0, BRIGHTNESS);
+    FastLED.setBrightness(BRIGHTNESS);
+    changeMillis=millis();
+    change=true;
+    Serial.println("Bri is: " + server.arg("bri"));
+    
+  }
+
+  if (server.arg("dur") != "") {     //duration config set
+    DURATION = str2int(server.arg("dur"));
+    DURATION = DURATION + 0;
+    //EEPROMupdate(2, DURATION);
+    changeMillis=millis();
+    change=true;
+    Serial.println("Dur is: " + server.arg("dur"));
+  }
+
+  if (server.arg("fps") != "") {     //fps config set
+    FPS = str2int(server.arg("fps"));
+    //EEPROMupdate(1, FPS);
+    changeMillis=millis();
+    change=true;
+    Serial.println("fps is: " + server.arg("fps"));
+  }
+
+  if (server.arg("hue") != "") {     //fps config set
+    huespeed = str2int(server.arg("hue"));
+    changeMillis=millis();
+    change=true;
+    Serial.println("huespeed is: " + server.arg("hue"));
+  }
+
+  if (server.arg("R") != "") {
+    solidColorRGB[0] = str2int(server.arg("R"));
+    //EEPROMupdate(10, SolidColorR);
+    animationList[0] = 0;
+    animationList[1] = 255;
+    //EEPROMupdate(30, 0);
+    //EEPROMupdate(31, 255);
+    animationListLength = 1;
+    animListindex = 0;
+    gCurrentPatternNumber = 0;
+    changeMillis=millis();
+    change=true;
+    Serial.println("R is: " + server.arg("R"));
+  }
+
+  if (server.arg("G") != "") {
+    solidColorRGB[1] = str2int(server.arg("G"));
+    //EEPROMupdate(11, SolidColorG);
+    animationList[0] = 0;
+    animationList[1] = 255;
+    //EEPROMupdate(30, 0);
+    //EEPROMupdate(31, 255);
+    animationListLength = 1;
+    animListindex = 0;
+    gCurrentPatternNumber = 0;
+    changeMillis=millis();
+    change=true;
+    Serial.println("G is: " + server.arg("G"));
+  }
+
+  if (server.arg("B") != "") {
+    solidColorRGB[2] = str2int(server.arg("B"));
+    //EEPROMupdate(12, SolidColorB);
+    animationList[0] = 0;
+    animationList[1] = 255;
+    //EEPROMupdate(30, 0);
+    //EEPROMupdate(31, 255);
+    animationListLength = 1;
+    animListindex = 0;
+    gCurrentPatternNumber = 0;
+    changeMillis=millis();
+    change=true;
+    Serial.println("B is: " + server.arg("B"));
+  }
+if (server.arg("anim") != "") {
+  String sequence = server.arg("anim");
+  Serial.println(sequence);
+  int firstminus = 0;
+  int secondminus = 0;
+  uint8_t i = 0;
+  while (1) {
+    firstminus = sequence.indexOf("-", secondminus);
+    secondminus = sequence.indexOf("-", firstminus + 1);
+    Serial.print("first minus: ");
+    Serial.println(firstminus);
+    Serial.print("second minus: ");
+    Serial.println(secondminus);
+    if (secondminus == -1) {
+      animationList[i] = 255;
+      //EEPROMupdate(AnmAdr + i, 255);
+      break;
+    }
+    animationList[i] = str2int(sequence.substring(firstminus + 1, secondminus));
+    Serial.println(animationList[i]);
+    if (animationList[i] < ARRAY_SIZE(gPatterns)) { 
+    //EEPROMupdate(30 + i, animationList[i]); 
+    }
+    else { animationList[i] = 255; i--; }
+    i++;
+  }
+  animationListLength = i;
+  animListindex = 0;
+  gCurrentPatternNumber = animationList[0];
+  changeMillis=millis();
+  change=true;
+  }
+  server.sendHeader("Connection", "close");
+server.sendHeader("Access-Control-Allow-Origin", "*");
+server.send(200, "text/plain", "");       //Response to the HTTP request
+}
+
+void saveToEEPROM(){
+  EEPROMupdate(BriAdr, BRIGHTNESS);
+  EEPROMupdate(FpsAdr, FPS);
+  EEPROMupdate(DurAdr, DURATION);
+  EEPROMupdate(RedAdr, solidColorRGB[0]);
+  EEPROMupdate(GrnAdr, solidColorRGB[1]);
+  EEPROMupdate(BluAdr, solidColorRGB[2]);
+  EEPROMupdate(HueSpeed, huespeed);
+  byte i=0;
+  while(1){
+    EEPROMupdate(AnmAdr+i,animationList[i] );
+    if(animationList[i] == 255)break;
+    i++;
+  }
+
+}
+
+void handleConf() {
+
+  String message = "";
+
+  if (server.arg("Temperature") == "") {     //Parameter not found
+
+    message = "Temperature Argument not found";
+
+  }
+  else {     //Parameter found
+
+    message = "Temperature Argument = ";
+    message += server.arg("Temperature");     //Gets the value of the query parameter
+
+  }
+  server.sendHeader("Connection", "close");
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", message);          //Returns the HTTP response
+  Serial.println(message);
+}
+
+void loadConfig(){
+  BRIGHTNESS=EEPROM.read(BriAdr);
+  Serial.println("BRIGHTNESS :" + String(BRIGHTNESS));
+  FPS=EEPROM.read(FpsAdr);
+  if (FPS==0) FPS=100;
+  Serial.println("FPS :" + String(FPS));
+  DURATION=EEPROM.read(DurAdr);
+  Serial.println("Duration :" + String(DURATION));
+  huespeed=EEPROM.read(HueSpeed);
+  Serial.println("HueSpeed :" + String(HueSpeed));
+  //animationListLength=EEPROM.read(29);
+  //if (animationListLength>100) animationListLength=1;
+  for (uint8_t i=0; i<30; i++){
+    animationList[i]=EEPROM.read(AnmAdr+i);
+    if (animationList[0]==255) {animationList[0]=1; animationList[1]=255; animationListLength=1; break;}
+    //Serial.println("i :" + String(i));
+    //Serial.println("eeprom read i+30 :" + String(EEPROM.read(30+i)));
+    if (animationList[i]==0){
+    solidColorRGB[0]=EEPROM.read(RedAdr);
+    solidColorRGB[1]=EEPROM.read(GrnAdr);
+    solidColorRGB[2]=EEPROM.read(BluAdr);
+    }
+    if (EEPROM.read(AnmAdr+i)==255) {
+      animationListLength=i;
+      //Serial.println("animationListLength in setup :" + String(animationListLength));
+      break;}
+      if(i==29){
+        animationList[i+1]=255;
+      }
+    }
+}
+
+void sendStart() {
+  server.sendHeader("Connection", "close");
+  server.sendHeader("Access-Control-Allow-Origin", "*");
+  server.send(200, "text/plain", "You are in!");          //Returns the HTTP response
+  Serial.println("You are in!");
+}
+
+void cWiFi()
+{
+  //Serial.print("\nConnecting to "); Serial.println("ViSTA");
+  /*WiFi.begin("ViSTA", "@m@8302829");
+  uint8_t i = 0;
+  while (WiFi.status() != WL_CONNECTED) { //Wait for connection
+    i++;
+    delay(500);
+    Serial.println("Waiting to connect…");
+    if (i==31)
+    {
+      Serial.println("could not connect to wifi.");
+      return;
+    }
+
+    
+  }
+
+  Serial.print("IP address: ");
+  Serial.println(WiFi.localIP());  //Print the local IP to access the server*/
+WiFi.softAP("NoorAbad", "12345678");
+
+  IPAddress myIP = WiFi.softAPIP();
+  Serial.print("AP IP address: ");
+  Serial.println(myIP);
+  server.on("/hi", sendStart);
+  server.on("/com", handleCom);
+  server.on("/conf", handleConf);
+  server.begin();                                       //Start the server
+  Serial.println("Server listening");
+}
+
+

@@ -86,11 +86,12 @@
                      <div class="toolbar" style="position:fixed; top:56px">
                         <div class="toolbar-inner">
 							<a class="link item-content item-link popup-open" data-popup=".animSett-popup" href="#" id="settingsBtn"><i class="material-icons">settings</i></a>
-                           <a class="link" id="loadBtn"><i class="material-icons">folder_open</i></a>
-                           <a class="link"><i class="material-icons">save</i></a>
+                           <a class="link item-content item-link popup-open" data-popup=".load-popup" href="#" id="loadBtn"><i class="material-icons">folder_open</i></a>
+                           <a class="link open-save"><i class="material-icons">save</i></a>
                            <a class="link" id="sendBtn"><i class="material-icons">send</i></a>
                         </div>
                      </div>
+					 			 
                      <div class="list sortable koodak-font" id="animationListDiv" style="top:30px; bottom:30px">
                         <ul>
                            <!-- will be populated ba JS -->
@@ -174,6 +175,34 @@
   </br>
   <button class="col button  button-raised color-indigo  button-fill button-round center" style="width:50%; margin:auto">ذخیره</button>
 </div>          
+        </div>
+		</div>
+      </div>
+    </div>
+	</div>
+	
+	
+		<div class="popup load-popup">
+		<div class="view view-init">
+      <div class="page">
+        <div class="navbar">
+          <div class="navbar-inner">
+            <div class="title koodak-font right">لیست های ذخیره شده</div>
+            <div class="left"><a href="#" class="link popup-close koodak-font"><i class="icon material-icons">keyboard_backspace</i></a></div>
+          </div>
+        </div>
+
+        <div class="page-content koodak-font">
+		<div class="block">
+
+
+
+<div class="list" id="animListSavedNamesDiv">
+<ul>
+</ul>
+  
+</div> 
+<button class="col button  button-raised color-indigo  button-fill button-round center" style="width:50%; margin:auto">بازنشانی</button>         
         </div>
 		</div>
       </div>
