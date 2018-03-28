@@ -146,6 +146,12 @@ text-align: left;
 background-size: 0 0;
 padding-right: 0px;
 }
+/*to tremove list link icon and padding for rtl (in load list)*/
+.md .list .item-link .item-inner{
+background-size: 0 0;
+padding-right: 10px;
+}
+
 .md .dialog-inner {
   padding: 18px 15px 1px;
   text-align: justify;

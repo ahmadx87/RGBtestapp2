@@ -123,6 +123,7 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
 	$('#sendBtn').on('click', function(){
 		var animIdx='-';
 		$('#animationListDiv ul li').each(function() { //this part generates the string to be sent to controller, like -1-0-3-2-0	
+		console.log($(this)[0].childNodes[1].childNodes[1].childNodes[1]);
 			animIdx+=($(this)[0].value+1)+'-';
         })
 		sendChange({"anim": animIdx});
@@ -249,11 +250,6 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
     });
 
 
-    $('#animationAddSelectList').on('click', '.animationAddItem', function() {
-        console.log("sbnv");
-    });
-
-
     $('#animationListDiv').on('click', '.swipeout-delete', function() {
         if ($('#animationListDiv ul li').length > 1) {
             $(this).parent().parent().remove();
@@ -278,12 +274,10 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
 		app.sheet.close($('.add-animation-sheet'), true);
     });
 
-
-
+	
 
 
     var liListItemsHtml = '<ul>';
-
     for (var i = 0; i < animations.length; i++) {
         liListItemsHtml += '<li value="'+i+'">\
 			<a href="#" class="animItem">'+animations[i]+'</a>\
@@ -428,17 +422,36 @@ $$('.open-save').on('click', function () {
 });	
 
 $$('#loadBtn').on('click',function(){
-	    
-    for (var i = 0; i < animations.length; i++) {
-        listHTMLstring += $listAddItem(animations[i],i);
-    }
-	var loadListHTMLstring = '';
-    
+	var loadListHTMLstring = '';  
 	animListSaveObj.forEach(function(item, index){
 		loadListHTMLstring += $loadListAddItem(item[0],index);
 	});
 	document.querySelector('#animListSavedNamesDiv ul').innerHTML = loadListHTMLstring;
 });	
+
+$('#animListSavedNamesDiv').on('click', '.loadListDeleteBtn', function() {
+		console.log($(this).parent().parent()[0].value);
+		animListSaveObj.splice($(this).parent().parent()[0].value,1);
+		localStorage.setItem('listSaveLocalStorage',JSON.stringify(animListSaveObj));
+		var loadListHTMLstring = '';  
+	animListSaveObj.forEach(function(item, index){
+		loadListHTMLstring += $loadListAddItem(item[0],index);
+	});
+	document.querySelector('#animListSavedNamesDiv ul').innerHTML = loadListHTMLstring;
+        //itemToAddAnimationAfter = $(this).parent().parent();
+    });
+
+	$('#animListSavedNamesDiv').on('click', '.loadListItem', function() {
+		console.log($(this).parent().parent()[0].value);
+		var loadListIdx=$(this).parent().parent()[0].value;
+		 listHTMLstring = '';
+    for (var i = 0; i < animListSaveObj[loadListIdx][1].length; i++) {
+        listHTMLstring += $listAddItem(animations[animListSaveObj[loadListIdx][1][i]],i);
+    }
+
+    document.querySelector('#animationListDiv ul').innerHTML = listHTMLstring;
+	app.popup.close($('.load-popup'), true);	
+    });
 
 });
 
@@ -446,7 +459,7 @@ $$('#loadBtn').on('click',function(){
 //This function returns the html for new item to add
 function $listAddItem(item, itemNo) {
     return '<li class="swipeout" value= '+itemNo+'>\
-          <div class="item-content swipeout-content">\
+          <div class="swipeout-content">\
             <div class="item-inner">\
               <div class="item-title">' + item + ' </div>\
             </div>\
@@ -460,7 +473,21 @@ function $listAddItem(item, itemNo) {
 }
 
 function $loadListAddItem(item, itemNo) {
-    return '<li class="swipeout" value= '+itemNo+'>\
+ 
+	return '<li class="swipeout" value="'+itemNo+'">\
+	      <div class="swipeout-content">\
+        <a href="#" class="item-link item-content loadListItem">\
+          <div class="item-inner">\
+              <div class="item-title">'+item+'</div>\
+          </div>\
+        </a>\
+      </div>\
+			<div class="swipeout-actions-right">\
+        <a href="#" class="loadListDeleteBtn swipeout-delete"><i class="material-icons">delete</i></a>\
+      </div>\
+			</li>';
+ 
+ /*   return '<li class="swipeout" value= '+itemNo+'>\
           <div class="item-content swipeout-content">\
             <div class="item-inner">\
               <div class="item-title">' + item + ' </div>\
@@ -469,7 +496,7 @@ function $loadListAddItem(item, itemNo) {
 		        <div class="swipeout-actions-right">\
         <a href="#" class="loadListDeleteBtn swipeout-delete"><i class="material-icons">delete</i></a>\
       </div>\
-        </li>'
+        </li>'*/
 }
 
 
