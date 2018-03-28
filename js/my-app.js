@@ -446,7 +446,7 @@ $('#animListSavedNamesDiv').on('click', '.loadListDeleteBtn', function() {
 		var loadListIdx=$(this).parent().parent()[0].value;
 		 listHTMLstring = '';
     for (var i = 0; i < animListSaveObj[loadListIdx][1].length; i++) {
-        listHTMLstring += $listAddItem(animations[animListSaveObj[loadListIdx][1][i]],i);
+        listHTMLstring += $listAddItem(animations[animListSaveObj[loadListIdx][1][i]],animListSaveObj[loadListIdx][1][i]);
     }
 
     document.querySelector('#animationListDiv ul').innerHTML = listHTMLstring;
