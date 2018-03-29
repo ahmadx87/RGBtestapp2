@@ -57,7 +57,6 @@ function onBackKeyDown(e) {
       },
     ],
     verticalButtons: false,
-	cssClass: 'appdialog',
   }).open();
 }
 
@@ -79,8 +78,10 @@ $$(document).on('pageInit', function(e) {
 
 
 document.addEventListener("DOMContentLoaded", function(event) {
-/*	app.preloader.show();
-	sendStartMsg();*/
+	setTimeout(function(){
+ 	app.preloader.show();
+	sendStartMsg();
+	},500);
 $$('.animSett-popup').on('popup:open', function (e, popup) {
   app.range.create({el: $$('#durationSlider')});
   app.range.create({el: $$('#FPSSlider')});
@@ -161,6 +162,16 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
         layout: 'block',
         autoResize: false
     });
+	
+	//when sett page on animation tab opens and a text box input selects when returning to solid color tab
+	//the color picker size shrinks the following lines fixes this
+	$$('.settPage-popup').on('popup:close', function (e, popup) {
+	widthSize = $(window).width() * .65;
+    $('#colorPickerDiv').css({
+        'width': widthSize,
+        'height': widthSize
+    });	
+	});
 
 
  /*   app.on('sortableSort', function(listEl, indexes) {
@@ -486,17 +497,7 @@ function $loadListAddItem(item, itemNo) {
         <a href="#" class="loadListDeleteBtn swipeout-delete"><i class="material-icons">delete</i></a>\
       </div>\
 			</li>';
- 
- /*   return '<li class="swipeout" value= '+itemNo+'>\
-          <div class="item-content swipeout-content">\
-            <div class="item-inner">\
-              <div class="item-title">' + item + ' </div>\
-            </div>\
-          </div>\
-		        <div class="swipeout-actions-right">\
-        <a href="#" class="loadListDeleteBtn swipeout-delete"><i class="material-icons">delete</i></a>\
-      </div>\
-        </li>'*/
+
 }
 
 
@@ -543,7 +544,7 @@ function sendStartMsg() {
       },
     ],
     verticalButtons: false,
-	cssClass: 'appdialog',
+	//cssClass: 'appdialog',
   }).open();
 			
 
