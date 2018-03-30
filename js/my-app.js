@@ -15,7 +15,6 @@ var app = new Framework7({
     id: 'io.framework7.testapp',
     root: '#app',
     theme: 'md',
-	pushState: true,
     statusbar: {
         materialBackgroundColor: '#303e8e',
     },
@@ -27,6 +26,9 @@ var app = new Framework7({
             },
         };
     },
+	view: {
+		pushState: true,
+	},
     methods: {
         helloWorld: function() {
             app.dialog.alert('Hello World!');
@@ -78,10 +80,10 @@ $$(document).on('pageInit', function(e) {
 
 
 document.addEventListener("DOMContentLoaded", function(event) {
-	setTimeout(function(){
+/*	setTimeout(function(){
  	app.preloader.show();
 	sendStartMsg();
-	},500);
+	},500);*/
 $$('.animSett-popup').on('popup:open', function (e, popup) {
   app.range.create({el: $$('#durationSlider')});
   app.range.create({el: $$('#FPSSlider')});
@@ -147,14 +149,14 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
 			});
 		},200));
 
-	
 
 
-    widthSize = $(window).width() * .65;
+	widthSize = $(window).width() * 0.65;
     $('#colorPickerDiv').css({
         'width': widthSize,
         'height': widthSize
     });
+
 
     $('#colorPickerInput').wheelColorPicker({
         format: 'hsv',
@@ -162,6 +164,11 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
         layout: 'block',
         autoResize: false
     });
+	
+	// the following even is added because when returning to static color tab the wcp size shrinks
+	$('#staticColorTab').on('tab:show', function(){
+		$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
+	});
 	
 	//when sett page on animation tab opens and a text box input selects when returning to solid color tab
 	//the color picker size shrinks the following lines fixes this
@@ -171,6 +178,7 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
         'width': widthSize,
         'height': widthSize
     });	
+	$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
 	});
 
 

@@ -73,26 +73,26 @@
 	
 margin: auto;
 }
-
+/*
 #colorPickerInput{
 	
 width: 500px;
 height: 500px;
 left: 50%;
   margin-left: -50px;
-}
+}*/
 .picker{
 	/*position:absolute;
 	top: -1.5em;*/
 	width: 100%;
 	height: 100%;
 }
-
+/*
 #colorPickerDivWraper{
 	margin: auto;
 	width:90%;
 }
-
+*/
  #colorPickerRGBIcon{
 	 position:absolute;
 	float: left;
