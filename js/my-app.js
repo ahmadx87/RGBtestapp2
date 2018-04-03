@@ -38,6 +38,7 @@ var app = new Framework7({
 
 
 // Handle Cordova Device Ready Event
+/*
 $$(document).on('deviceready', function() {
     document.addEventListener("backbutton", onBackKeyDown, false);
 });
@@ -61,7 +62,7 @@ function onBackKeyDown(e) {
     verticalButtons: false,
   }).open();
 }
-
+*/
 // Now we need to run the code that will be executed only for About page.
 
 
