@@ -7,8 +7,7 @@ if(!animListSaveObj){animListSaveObj=[]};
 console.log(animListSaveObj);
 var itemToAddAnimationAfter = '';
 var powerState=true;
-var deviceIP="http://192.168.1.10/";
-var currentPopup="";
+var deviceIP="http://192.168.4.1/";
 
 
 // Init App
@@ -182,7 +181,7 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
         autoResize: false
     });
 	
-	// the following even is added because when returning to static color tab the wcp size shrinks
+	// the following event is added because when returning to static color tab the wcp size shrinks
 	$('#staticColorTab').on('tab:show', function(){
 		$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
 	});
@@ -201,6 +200,8 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
     });	
 	$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
 	});
+	
+	
 
 
  /*   app.on('sortableSort', function(listEl, indexes) {
@@ -233,24 +234,20 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
                     for (var i = 0; i < els.length; i++) {
                         els[i].value = 200;
                         app.range.create({
-                            el: els[i],
-                            /*on: {
-                                change: throttle(function(r){
-										console.log(r.el);
-										//console.log(r.value);
-										sendChange({
-											"R":Math.round(color.r*255),
-											"G":Math.round(color.g*255),
-											"B":Math.round(color.b*255),	
-										});
-									},200)
-                                
-                            }*/
+                            el: els[i]
                         });
 
                     }
 
-                }
+                },
+				close:function(){
+                        $('#colorPickerInput').wheelColorPicker('setColor', {
+                            r: app.range.getValue('#redSlider') / 255,
+                            g: app.range.getValue('#greenSlider') / 255,
+                            b: app.range.getValue('#blueSlider') / 255
+                        });
+				}
+				
             },
             content: '<div class="block">\
              <div class="range-slider color-red" id="redSlider" data-label="true">\
