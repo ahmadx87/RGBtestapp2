@@ -29,6 +29,7 @@
     <!--<plugin name="cordova-plugin-wkwebview-engine" spec="~1.0.1" />      #0a6ebd      -->  
 
     <platform name="android">
+        <icon src="icon.png" />
     </platform>
 
 
