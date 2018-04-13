@@ -8,6 +8,7 @@ console.log(animListSaveObj);
 var itemToAddAnimationAfter = '';
 var powerState=true;
 var deviceIP="http://192.168.1.10/";
+var currentPopup="";
 
 
 // Init App
@@ -36,15 +37,23 @@ var app = new Framework7({
     },
 });
 
+$$(window).on('popstate',function(){
+app.dialog.alert("back button on android clicked")
+mainView.router.back();
+});
+
 
 // Handle Cordova Device Ready Event
-/*
 $$(document).on('deviceready', function() {
     document.addEventListener("backbutton", onBackKeyDown, false);
 });
 
 function onBackKeyDown(e) {
-			  app.dialog.create({
+	if($('html').hasClass('with-modal-popup')||$('html').hasClass('with-modal-dialog')){
+		app.popup.close();
+		app.dialog.close();
+	}else{		
+	app.dialog.create({
     title: 'خروج',
     text: 'آیا مایلید از نرم افزار خارج شوید؟',
     buttons: [
@@ -61,8 +70,9 @@ function onBackKeyDown(e) {
     ],
     verticalButtons: false,
   }).open();
-}
-*/
+	}
+};
+
 // Now we need to run the code that will be executed only for About page.
 
 
@@ -76,19 +86,25 @@ $$(document).on('pageInit', function(e) {
         // Following code will be executed for page with data-page attribute equal to "about"
         app.alert('Here comes About page');
     }
-
-})
+});
 
 
 document.addEventListener("DOMContentLoaded", function(event) {
+	
 /*	setTimeout(function(){
  	app.preloader.show();
 	sendStartMsg();
 	},500);*/
+ $('#wifiSettOkBtn').on('click',function(){
+	 app.popup.close();
+});
+	
 $$('.animSett-popup').on('popup:open', function (e, popup) {
   app.range.create({el: $$('#durationSlider')});
   app.range.create({el: $$('#FPSSlider')});
   app.range.create({el: $$('#hueChangeSlider')});
+  
+	
  
 $$('#durationSlider').on("range:change",throttle(function(e, range){
 			sendChange({
@@ -169,6 +185,10 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
 	// the following even is added because when returning to static color tab the wcp size shrinks
 	$('#staticColorTab').on('tab:show', function(){
 		$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
+	});
+	
+		$$('.settPage-popup').on('popup:open', function () {
+
 	});
 	
 	//when sett page on animation tab opens and a text box input selects when returning to solid color tab
@@ -460,6 +480,7 @@ $('#animListSavedNamesDiv').on('click', '.loadListDeleteBtn', function() {
 	document.querySelector('#animListSavedNamesDiv ul').innerHTML = loadListHTMLstring;
         //itemToAddAnimationAfter = $(this).parent().parent();
     });
+
 
 	$('#animListSavedNamesDiv').on('click', '.loadListItem', function() {
 		console.log($(this).parent().parent()[0].value);
