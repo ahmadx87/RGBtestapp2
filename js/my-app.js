@@ -48,9 +48,10 @@ $$(document).on('deviceready', function() {
 });
 
 function onBackKeyDown(e) {
-	if($('html').hasClass('with-modal-popup')||$('html').hasClass('with-modal-dialog')){
+	if($('html').hasClass('with-modal-popup')||$('html').hasClass('with-modal-dialog')||$('html').hasClass('with-modal-sheet')){
 		app.popup.close();
 		app.dialog.close();
+		app.sheet.close();
 	}else{		
 	app.dialog.create({
     title: 'خروج',
