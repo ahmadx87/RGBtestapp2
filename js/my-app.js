@@ -1,4 +1,5 @@
 // Dom7
+var cl=console.log;
 var $$ = Dom7;
 animations = ["رنگین کمان", "رنگین کمان+درخشش", "تپش تصادفی", "ستاره دنباله دار", "3 ستاره دنباله دار", "رفت و برگشتی", "7 رنگ پیوسته"];
 //format of animListSaveObj ===> [['ll',[1,2,3]],['mmm',[5,6,7,8,9,10]]];
@@ -36,11 +37,6 @@ var app = new Framework7({
     },
 });
 
-$$(window).on('popstate',function(){
-app.dialog.alert("back button on android clicked")
-mainView.router.back();
-});
-
 
 // Handle Cordova Device Ready Event
 $$(document).on('deviceready', function() {
@@ -52,7 +48,7 @@ function onBackKeyDown(e) {
 		app.popup.close();
 		app.dialog.close();
 		app.sheet.close();
-	}else{		
+	}else{
 	app.dialog.create({
     title: 'خروج',
     text: 'آیا مایلید از نرم افزار خارج شوید؟',
@@ -73,38 +69,105 @@ function onBackKeyDown(e) {
 	}
 };
 
-// Now we need to run the code that will be executed only for About page.
-
-
-// Option 2. Using one 'pageInit' event handler for all pages:
-$$(document).on('pageInit', function(e) {
-
-    // Get page data from event data
-    var page = e.detail.page;
-    console.log('1');
-    if (page.name === 'about') {
-        // Following code will be executed for page with data-page attribute equal to "about"
-        app.alert('Here comes About page');
-    }
-});
-
-
 document.addEventListener("DOMContentLoaded", function(event) {
-	
+	//$("#wifiSettOkBtn").addClass('disabled');
 /*	setTimeout(function(){
  	app.preloader.show();
 	sendStartMsg();
 	},500);*/
  $('#wifiSettOkBtn').on('click',function(){
-	 app.popup.close();
+		var errorNleds=false;
+		var errorChangePass= false;
+     	 var configString = {};
+		 if($("#numberOfLEDSinput").val()){
+        if ($("#numberOfLEDSinput").val() > 1000 || $("#numberOfLEDSinput").val() < 1 || (/[^0-9]/.test($("#numberOfLEDSinput").val()))) {
+								var errDialogNleds=app.dialog.create({
+									title: 'توجه!',
+									verticalButtons: false,
+									buttons: [{
+											text: 'قبول',
+											color: 'orange',
+											onClick: function() {
+												app.dialog.close(errDialogNleds);
+											},
+										}								
+										
+									],
+									content: '<div class="block">\
+										<div class="koodak-font">تعداد LED باید بیشتر از یک و کمتر از 1000 عدد باشد.</div>\
+											</div>',
+								}).open();
+									errorNleds=true;
+        } else {
+            configString.nled = parseInt($("#numberOfLEDSinput").val());
+			errorNleds=false;
+        }
+ }
+
+        var usernameValidate = (/[^a-zA-Z0-9 &,.:*-]/.test($("#usernameWifi").val()) || (($("#usernameWifi").val()).length < 1) || (($("#usernameWifi").val()).length > 32));
+        var passwordOldValidate = ((/[^a-zA-Z0-9 &,.:*-]/.test($("#passwordWifiOld").val())) || (($("#passwordWifiOld").val()).length < 8) || (($("#passwordWifiOld").val()).length > 32)); //check if password length is at least 8 chars and it only contains letters, numbers and these chars: "space-&:.,". if everything is ok it will return false.
+        var passwordNewValidate = ((/[^a-zA-Z0-9 &,.:*-]/.test($("#passwordWifiNew").val())) || (($("#passwordWifiNew").val()).length < 8) || (($("#passwordWifiNew").val()).length > 32));
+        if ($("#passwordWifiOld").val().length > 0 || $("#passwordWifiNew").val().length > 0 || $("#usernameWifi").val().length > 0) {
+            if (usernameValidate || passwordOldValidate || passwordNewValidate) {
+								app.dialog.create({
+									title: 'توجه!',
+									verticalButtons: false,
+									buttons: [{
+											text: 'قبول',
+											color: 'orange',
+											onClick: function() {
+											app.dialog.close();
+											},
+										}								
+										
+									],
+									content: '<div class="block">\
+										<div class="koodak-font">در تغییر دادن نام و رمز وایفای به موارد زیر توجه کنید:<br/>- رمز وایفای باید حداقل 8 و حداکثر 32 کارکتر باشد.<br/>- نام وایفای باید حداقل 1 و حداکثر 32 کارکتر باشد.<br/>- رمز و نام وایفای تنها می تواند شامل حروف انگلیسی بزرگ و کوچک، اعداد، و علائم : , . &amp; * - و فاصله خالی باشد.</div>\
+											</div>',
+								}).open();		
+								errorChangePass=true;
+
+            } else {
+                configString.uname = $("#usernameWifi").val();
+				configString.passnew = $("#passwordWifiNew").val();
+				configString.passold = $("#passwordWifiOld").val();
+				errorChangePass=false;
+            }
+
+        }
+		if(Object.keys(configString).length!=0 && !errorChangePass && !errorNleds){
+			sendConfig(configString);
+		}
+		
+        //window.history.back();
+   //     sendConfig(configString);
+	 //app.popup.close();
 });
+
+$$('.settPage-popup').on('popup:open',function(){
 	
+});
+
+
+
+$$('.settPage-popup').on('popup:close',function(){
+	removeClearKey([$("#numberOfLEDSinput"),$("#passwordWifiNew"),$("#passwordWifiOld"),$("#usernameWifi")]);
+});
+
+function removeClearKey(element){
+	element.forEach(function(item,index){
+		item.val("");
+		item.parent().parent().parent().removeClass('item-input-with-value');
+	    item.removeClass('input-with-value');
+	});
+}
+
 $$('.animSett-popup').on('popup:open', function (e, popup) {
   app.range.create({el: $$('#durationSlider')});
   app.range.create({el: $$('#FPSSlider')});
   app.range.create({el: $$('#hueChangeSlider')});
-  
-	
+ 
+ 
  
 $$('#durationSlider').on("range:change",throttle(function(e, range){
 			sendChange({
@@ -182,13 +245,9 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
         autoResize: false
     });
 	
-	// the following event is added because when returning to static color tab the wcp size shrinks
+	// the following even is added because when returning to static color tab the wcp size shrinks
 	$('#staticColorTab').on('tab:show', function(){
 		$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
-	});
-	
-		$$('.settPage-popup').on('popup:open', function () {
-
 	});
 	
 	//when sett page on animation tab opens and a text box input selects when returning to solid color tab
@@ -201,8 +260,6 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
     });	
 	$('#colorPickerInput').wheelColorPicker( 'refreshWidget' );
 	});
-	
-	
 
 
  /*   app.on('sortableSort', function(listEl, indexes) {
@@ -235,20 +292,24 @@ $$('#hueChangeSlider').on("range:change",throttle(function(e, range){
                     for (var i = 0; i < els.length; i++) {
                         els[i].value = 200;
                         app.range.create({
-                            el: els[i]
+                            el: els[i],
+                            /*on: {
+                                change: throttle(function(r){
+										console.log(r.el);
+										//console.log(r.value);
+										sendChange({
+											"R":Math.round(color.r*255),
+											"G":Math.round(color.g*255),
+											"B":Math.round(color.b*255),	
+										});
+									},200)
+                                
+                            }*/
                         });
 
                     }
 
-                },
-				close:function(){
-                        $('#colorPickerInput').wheelColorPicker('setColor', {
-                            r: app.range.getValue('#redSlider') / 255,
-                            g: app.range.getValue('#greenSlider') / 255,
-                            b: app.range.getValue('#blueSlider') / 255
-                        });
-				}
-				
+                }
             },
             content: '<div class="block">\
              <div class="range-slider color-red" id="redSlider" data-label="true">\
@@ -479,7 +540,6 @@ $('#animListSavedNamesDiv').on('click', '.loadListDeleteBtn', function() {
         //itemToAddAnimationAfter = $(this).parent().parent();
     });
 
-
 	$('#animListSavedNamesDiv').on('click', '.loadListItem', function() {
 		console.log($(this).parent().parent()[0].value);
 		var loadListIdx=$(this).parent().parent()[0].value;
@@ -489,6 +549,10 @@ $('#animListSavedNamesDiv').on('click', '.loadListDeleteBtn', function() {
     }
 
     document.querySelector('#animationListDiv ul').innerHTML = listHTMLstring;
+	if ($('#animationListDiv ul li').length == 1) {
+					console.log("aaaaa1")
+                $('#animationListDiv .swipeout-delete').removeClass('swipeout-delete');
+            }
 	app.popup.close($('.load-popup'), true);	
     });
 
@@ -532,6 +596,21 @@ function $loadListAddItem(item, itemNo) {
 function sendChange(dataToSend) {
 	$.ajax({
 		url: deviceIP+"com",
+		data: dataToSend,
+		//crossDomain: true,
+		type: 'GET',
+		cache: true,
+		timeout: 2500,
+		error: function () {
+		},
+		success: function (data) {
+		}
+	});
+}
+
+function sendConfig(dataToSend) {
+	$.ajax({
+		url: deviceIP+"conf",
 		data: dataToSend,
 		//crossDomain: true,
 		type: 'GET',
@@ -624,3 +703,25 @@ function throttle(func, wait, options) {
   };
 };
 
+//the following function forces NumberOfLeds input to only accept number character
+$(function() {
+    $("input[id*='numberOfLEDSinput']").keydown(function(event) {
+        if ((event.keyCode < 48 || event.keyCode > 57) && (event.keyCode < 96 || event.keyCode > 105) && event.keyCode != 8) {
+            event.preventDefault();
+        }
+    });
+})
+
+//for counting number of keys in an object if not already defined by browser.
+if (!Object.keys) {
+    Object.keys = function (obj) {
+        var keys = [],
+            k;
+        for (k in obj) {
+            if (Object.prototype.hasOwnProperty.call(obj, k)) {
+                keys.push(k);
+            }
+        }
+        return keys;
+    };
+}

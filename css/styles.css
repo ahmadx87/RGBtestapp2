@@ -125,6 +125,11 @@ direction: rtl;
 font-size: 1.1em;
 }
 
+/*animation add list nav margin*/
+p.link.koodak-font {
+    margin-right: 15px;
+}
+
 /* dialog title and font font*/
 
 .dialog-title, .md .dialog-button, .md .dialog-text{

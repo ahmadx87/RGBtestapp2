@@ -18,7 +18,7 @@
       <link type="text/css" rel="stylesheet" href="css/wheelcolorpicker.css" />
       <link rel="stylesheet" href="css/styles.css">
    </head>
-   <body  class="color-theme-pink">
+   <body  class="color-theme-indigo">
       <div id="app">
          <div class="statusbar"></div>
          <div class="view view-main view-init" data-url="/">
@@ -131,9 +131,22 @@
 
         <div class="page-content koodak-font">
 		<div class="block">
-<div class="block-title">تغییر نام و رمز دستگاه</div>
 <div class="list no-hairlines-md">
   <ul>
+<div class="block-title">تغییر تعداد LED</div>
+    <li class="item-content item-input item-input-with-info">
+      <div class="item-media">
+        <i class="material-icons">lightbulb_outline</i>
+      </div>
+      <div class="item-inner">
+        <div class="item-title item-floating-label item-label">تعداد LED</div>
+        <div class="item-input-wrap ltr-element">
+          <input type="text" id="numberOfLEDSinput" placeholder="تعداد LED">
+          <span class="input-clear-button ltr-element"></span>
+        </div>
+      </div>
+    </li>
+	<div class="block-title">تغییر نام و رمز عبور دستگاه</div>
     <li class="item-content item-input item-input-with-info">
       <div class="item-media">
         <i class="material-icons">lock_outline</i>
@@ -141,7 +154,7 @@
       <div class="item-inner">
         <div class="item-title item-floating-label item-label">رمز کنونی وایفای</div>
         <div class="item-input-wrap ltr-element">
-          <input type="text" placeholder="رمز وایفای">
+          <input type="text" id="passwordWifiOld">
           <span class="input-clear-button ltr-element"></span>
         </div>
       </div>
@@ -154,7 +167,7 @@
       <div class="item-inner">
         <div class="item-title item-floating-label item-label">نام جدید وایفای</div>
         <div class="item-input-wrap ltr-element">
-          <input type="text">
+          <input type="text" id="usernameWifi">
           <span class="input-clear-button"></span>
         </div>
       </div>
@@ -166,7 +179,7 @@
       <div class="item-inner">
         <div class="item-title item-label item-floating-label">رمز جدید وایفای</div>
         <div class="item-input-wrap ltr-element">
-          <input type="email" placeholder="Your e-mail">
+          <input type="email" id="passwordWifiNew">
           <span class="input-clear-button"></span>
         </div>
       </div>
